@@ -1,7 +1,6 @@
 use std::ffi::CString;
 use std::fs;
 use std::io;
-use std::path::Path;
 use std::path::PathBuf;
 use winapi::shared::winerror::WAIT_TIMEOUT;
 use winapi::um::fileapi::{FindFirstChangeNotificationA, FindNextChangeNotification};
