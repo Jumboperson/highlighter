@@ -1,14 +1,14 @@
-use winapi::um::fileapi::{FindFirstChangeNotificationA, FindNextChangeNotification};
-use winapi::um::synchapi::WaitForSingleObject;
-use winapi::um::handleapi::INVALID_HANDLE_VALUE;
-use winapi::um::winbase::{WAIT_OBJECT_0, WAIT_FAILED, INFINITE};
-use winapi::shared::winerror::WAIT_TIMEOUT;
-use winapi::um::winnt::{HANDLE, FILE_NOTIFY_CHANGE_FILE_NAME, FILE_NOTIFY_CHANGE_LAST_WRITE};
 use std::ffi::CString;
-use std::path::Path;
-use std::io;
 use std::fs;
-use std::path::{PathBuf};
+use std::io;
+use std::path::Path;
+use std::path::PathBuf;
+use winapi::shared::winerror::WAIT_TIMEOUT;
+use winapi::um::fileapi::{FindFirstChangeNotificationA, FindNextChangeNotification};
+use winapi::um::handleapi::INVALID_HANDLE_VALUE;
+use winapi::um::synchapi::WaitForSingleObject;
+use winapi::um::winbase::{INFINITE, WAIT_FAILED, WAIT_OBJECT_0};
+use winapi::um::winnt::{FILE_NOTIFY_CHANGE_FILE_NAME, FILE_NOTIFY_CHANGE_LAST_WRITE, HANDLE};
 
 struct DirWatcher {
     src: PathBuf,
@@ -18,8 +18,15 @@ struct DirWatcher {
 
 impl DirWatcher {
     pub fn new(src: PathBuf, dst: PathBuf) -> Option<Self> {
-        let cstring = CString::new(&*src.clone().into_os_string().into_string().unwrap()).expect("Failed to make CString");
-        let handle = unsafe { FindFirstChangeNotificationA(cstring.as_c_str().as_ptr(), 0, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE) };
+        let cstring = CString::new(&*src.clone().into_os_string().into_string().unwrap())
+            .expect("Failed to make CString");
+        let handle = unsafe {
+            FindFirstChangeNotificationA(
+                cstring.as_c_str().as_ptr(),
+                0,
+                FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
+            )
+        };
 
         if !src.is_dir() {
             panic!("Source needs to be a directory");
@@ -89,6 +96,8 @@ fn main() {
     let homepath = std::env::var("USERPROFILE").unwrap();
     let watcher = DirWatcher::new(
         PathBuf::from(appdata + "\\Highlights\\Hunt  Showdown"),
-        PathBuf::from(homepath + "\\Videos\\Hunt  Showdown")).unwrap();
+        PathBuf::from(homepath + "\\Videos\\Hunt  Showdown"),
+    )
+    .unwrap();
     watcher.execute();
 }
